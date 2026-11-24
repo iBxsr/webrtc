@@ -18,6 +18,7 @@
 #define SDK_OBJC_NATIVE_SRC_AUDIO_AUDIO_DEVICE_AUDIOENGINE_H_
 
 #include <atomic>
+#include <functional>
 #include <memory>
 
 #include "api/audio_options.h"
@@ -258,6 +259,18 @@ class AudioEngineDevice : public AudioDeviceModule, public AudioSessionObserver 
 
   bool IsStopOnMuteModeEnabled() const override;
 
+  // Test only. Steps of a device transition where a test can inject a failure
+  // that an observer hook cannot cause.
+  enum class FaultPoint {
+    // The engine start fails, as if -[AVAudioEngine startAndReturnError:]
+    // failed on every attempt.
+    kStartEngine,
+  };
+  // Test only. `injector` runs on the ADM thread at each fault point. A
+  // non-zero result fails that step with the returned error. Pass nullptr to
+  // remove it.
+  void SetFaultInjectorForTesting(std::function<int32_t(FaultPoint)> injector);
+
  private:
   using EngineStateUpdate = audio_engine::EngineStateUpdate;
   using TransitionPlan = audio_engine::TransitionPlan;
@@ -378,6 +391,8 @@ class AudioEngineDevice : public AudioDeviceModule, public AudioSessionObserver 
   AVAudioPCMBuffer* converter_buffer_;
 
   void* configuration_observer_ RTC_GUARDED_BY(thread_) = nullptr;
+
+  std::function<int32_t(FaultPoint)> fault_injector_ RTC_GUARDED_BY(thread_);
 };
 }  // namespace webrtc
 

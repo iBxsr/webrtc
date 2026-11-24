@@ -1292,6 +1292,11 @@ int32_t AudioEngineDevice::PlayoutDelay(uint16_t* delayMS) const {
   return 0;
 }
 
+void AudioEngineDevice::SetFaultInjectorForTesting(std::function<int32_t(FaultPoint)> injector) {
+  RTC_DCHECK_RUN_ON(thread_);
+  fault_injector_ = std::move(injector);
+}
+
 bool AudioEngineDevice::IsEngineRunning() {
   LOGI() << "IsEngineRunning";
   RTC_DCHECK_RUN_ON(thread_);
@@ -3054,6 +3059,14 @@ int32_t AudioEngineDevice::ApplyDeviceEngineState(EngineStateUpdate state) {
         if (result != 0) {
           LOGE() << "Call to OnEngineWillStart returned error: " << result;
           return rollback(result);
+        }
+      }
+
+      if (fault_injector_) {
+        int32_t injected = fault_injector_(FaultPoint::kStartEngine);
+        if (injected != 0) {
+          LOGE() << "Injected engine start failure: " << injected;
+          return rollback(injected);
         }
       }
 
