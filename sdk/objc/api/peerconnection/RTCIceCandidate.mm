@@ -21,6 +21,7 @@
 @synthesize sdpMLineIndex = _sdpMLineIndex;
 @synthesize sdp = _sdp;
 @synthesize serverUrl = _serverUrl;
+@synthesize usernameFragment = _usernameFragment;
 
 - (instancetype)initWithSdp:(NSString *)sdp
               sdpMLineIndex:(int)sdpMLineIndex
@@ -57,6 +58,9 @@
                  sdpMid:[NSString stringForStdString:candidate->sdp_mid()]];
   rtcCandidate->_serverUrl =
       [NSString stringForStdString:candidate->server_url()];
+  const std::string &ufrag = candidate->candidate().username();
+  rtcCandidate->_usernameFragment =
+      ufrag.empty() ? nil : [NSString stringForStdString:ufrag];
   return rtcCandidate;
 }
 

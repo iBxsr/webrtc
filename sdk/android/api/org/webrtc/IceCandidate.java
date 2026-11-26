@@ -25,22 +25,33 @@ public class IceCandidate {
   public final String serverUrl;
   public final PeerConnection.AdapterType adapterType;
 
+  /**
+   * The ICE username fragment (ufrag) of the ICE generation the candidate belongs to, as
+   * {@code usernameFragment} in the web API. It changes with every ICE restart. Set on candidates
+   * the peer connection reports. Null when such a candidate names none, and for a candidate
+   * created from an SDP line.
+   */
+  @Nullable public final String usernameFragment;
+
   public IceCandidate(String sdpMid, int sdpMLineIndex, String sdp) {
     this.sdpMid = sdpMid;
     this.sdpMLineIndex = sdpMLineIndex;
     this.sdp = sdp;
     this.serverUrl = "";
     this.adapterType = PeerConnection.AdapterType.UNKNOWN;
+    this.usernameFragment = null;
   }
 
   @CalledByNative
   IceCandidate(String sdpMid, int sdpMLineIndex, String sdp, String serverUrl,
-      PeerConnection.AdapterType adapterType) {
+      PeerConnection.AdapterType adapterType, String usernameFragment) {
     this.sdpMid = sdpMid;
     this.sdpMLineIndex = sdpMLineIndex;
     this.sdp = sdp;
     this.serverUrl = serverUrl;
     this.adapterType = adapterType;
+    this.usernameFragment =
+        usernameFragment == null || usernameFragment.isEmpty() ? null : usernameFragment;
   }
 
   @Override

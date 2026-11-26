@@ -35,6 +35,14 @@ RTC_OBJC_EXPORT
 /** The URL of the ICE server which this candidate is gathered from. */
 @property(nonatomic, readonly, nullable) NSString *serverUrl;
 
+/**
+ * The ICE username fragment (ufrag) of the ICE generation the candidate
+ * belongs to, as `usernameFragment` in the web API. It changes with every ICE
+ * restart. Set on candidates the peer connection reports. Nil when such a
+ * candidate names none, and for a candidate created from an SDP line.
+ */
+@property(nonatomic, readonly, nullable) NSString *usernameFragment;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 /**
